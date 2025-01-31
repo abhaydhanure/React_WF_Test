@@ -17,7 +17,6 @@ import {
   DialogTitle,
   InputLabel,
   SelectChangeEvent ,
-  TextField
 } from "@mui/material";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import EditNoteIcon from "@mui/icons-material/EditNote";
@@ -51,8 +50,6 @@ const TicketForm: React.FC = () => {
   const [showTable] = useState(false); // New state to control table visibility
   const [openEditModal, setOpenEditModal] = useState(false); // Modal for editing workflow
   const [selectedWorkflow] = useState("");
-
-  const [workflowName, setWorkflowName] = useState('');
   const handleOpenEditModal = () => {
     setOpenEditModal(true);
   };
@@ -69,22 +66,19 @@ const TicketForm: React.FC = () => {
 
   const handleSelectChange = (event: SelectChangeEvent<string>) => {
     setSelectedWorkflowEdit(event.target.value); // event.target.value is now typed as string
+    // console.log(event.target.value);
     handleButtonClick('edit', event.target.value);
-
-    if (event.target.value === 'workflow1') {
-      setWorkflowName('Workflow 1');
-    } else if (event.target.value === 'workflow2') {
-      setWorkflowName('Workflow 2');
-    } else if (event.target.value === 'workflow3') {
-      setWorkflowName('Workflow 3');
-    }
+   
   };
   
   const handleButtonClick = (action: 'create' | 'edit', workflow: string) => {
     setMode(action);
     console.log(`Selected workflow: ${workflow}`);
   };
-
+  
+  const handleChange = (new_WF:string)=>{
+    setSelectedWorkflowEdit(new_WF);
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -165,22 +159,15 @@ const TicketForm: React.FC = () => {
           <DialogContent>
             <FormControl fullWidth>
               <InputLabel id="workflow-select-label">Select Workflow</InputLabel>
-              <Select labelId="workflow-select-label" id="workflow-select" value={selectedWorkflowEdit}   onChange={(e) => setWorkflowName(e.target.value)} >
+              <Select labelId="workflow-select-label" id="workflow-select" value={selectedWorkflowEdit}   onChange={handleSelectChange} >
                 <MenuItem value={"workflow1"}>Workflow 1</MenuItem>
                 <MenuItem value={"workflow2"}>Workflow 2</MenuItem>
                 <MenuItem value={"workflow3"}>Workflow 3</MenuItem>
               </Select>
             </FormControl>
-            {renderTable()} 
-            {/* Display the workflow name in the input field */}
-        {/* <TextField
-          fullWidth
-          label="Workflow Name"
-          value={workflowName}
-          onChange={(e) => setWorkflowName(e.target.value)} // Optional if you want to edit it directly
-          placeholder="Workflow Name will appear here"
-          sx={{ mt: 3 }}
-        /> */}
+            {renderTable()}
+            
+        
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseEditModal} color="primary">Cancel</Button>
@@ -194,6 +181,7 @@ const TicketForm: React.FC = () => {
           mode={mode ?? 'null'} // If mode is null, default to 'create'
           states_wf={states}
           workflow={selectedWorkflowEdit}
+          onChange={handleChange}
         />
 
     </ThemeProvider>

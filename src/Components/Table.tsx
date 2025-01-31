@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -31,6 +31,7 @@ interface TablesProps {
   mode: string; // Assuming 'mode' is a string, you can adjust the type as needed
   states_wf: any; // Replace 'any' with a more specific type if you know the shape of 'states'
   workflow: any; // Replace 'any' with a more specific type if you know the shape of 'workflow'
+  onChange:(newWF:string)=>void;
 }
 
 interface State {
@@ -38,7 +39,7 @@ interface State {
   subStates: Array<{ name: string }>;
 }
 
-const Table: React.FC<TablesProps> = ({ mode, states_wf, workflow }) => {
+const Table: React.FC<TablesProps> = ({ mode, states_wf, workflow,onChange }) => {
 
   <div>
       <p>Mode: {mode}</p>
@@ -56,7 +57,7 @@ const Table: React.FC<TablesProps> = ({ mode, states_wf, workflow }) => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [actionType, setActionType] = useState("");
-  const [workflowName, setWorkflowName] = useState("");
+  const [workflowName, setWorkflowName] = useState('');
   const [workflowOwner, setWorkflowOwner] = useState("ad923740.ttl");
 
   const handleColorChange = (index: number, color: string) => {
@@ -126,7 +127,6 @@ const Table: React.FC<TablesProps> = ({ mode, states_wf, workflow }) => {
     setOpenSnackbar(true);
   };
 
-
   const deleteSelectedStates = () => {
     const deletedStates = selectedStates.length;
 
@@ -174,9 +174,21 @@ const Table: React.FC<TablesProps> = ({ mode, states_wf, workflow }) => {
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
-  };
+    };
+
+  useEffect(()=>{
+    setWorkflowName(workflow);
+   },[workflow])
+
+  const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) =>{
+    const updatedWf = event.target.value;
+    onChange(updatedWf);
+    setWorkflowName(updatedWf);
+
+    }
 
   const isAnyStateSelected = selectedStates.length > 0;
+  // onChange={(e) => setWorkflowName(e.target.value)}
   return (
     <div>
     {(mode === 'create' || mode === 'edit') &&
@@ -185,7 +197,7 @@ const Table: React.FC<TablesProps> = ({ mode, states_wf, workflow }) => {
       <Box my={3} sx={{ width: "calc(100% - 10px)", mx: "5px" }}>
             <Card sx={{ pt: "7px", mb: 3, border: "3px solid lavender" }}>
               <CardContent>
-            work flow name - {workflow}
+            {workflow} -   
             You are in - {mode} mode
            <Box my={3}>
            <Grid container spacing={3}>
@@ -194,8 +206,8 @@ const Table: React.FC<TablesProps> = ({ mode, states_wf, workflow }) => {
                  fullWidth
                  label="Workflow name *"
                  value={workflowName}
-                  onChange={(e) => setWorkflowName(e.target.value)}
-                  placeholder="Enter Workflow Name"
+                 onChange={handleValueChange}
+                 placeholder="Enter Workflow Name"
                />
              </Grid>
              <Grid item xs={12} sm={6}>
