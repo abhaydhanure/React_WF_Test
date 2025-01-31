@@ -1,0 +1,203 @@
+/* .css-dkakg3-MuiGrid-root > .MuiGrid-item {
+  padding-top: 0px !important;
+}
+
+/* .css-1oqqzyl-MuiContainer-root {
+  max-width: 1637px !important;
+} */ */
+
+
+
+/* Styling the main app container */
+.App {
+  display: flex;
+  align-items: center; /* Centers the card vertically */
+  flex-direction: column; /* Stack the card and form vertically */
+  height: 100vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  padding-top: 20px;
+}
+
+/* Styling the card */
+.card {
+  width: 90%;
+  max-width: 800px;
+  padding: 20px;
+  background-color: #f4f4f4;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  margin-bottom: 20px; /* Adds space below the card */
+  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  box-shadow: 0px 3px 3px -2px rgb(0 0 0 / 6%), 0px 3px 4px 0px rgb(0 0 0 / 4%), 0px 1px 8px 0px rgb(0 0 0 / 4%) !important;
+  border: 3px solid lavender;
+}
+
+/* Card title styling */
+.card h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+  margin-top: -6px;
+  background-image: linear-gradient(-225deg, #473B7B 0%, #3584A7 91%);
+  color: floralwhite;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+select,
+input {
+  width: 100%;
+  padding: 5px;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.clear-btn {
+  margin-top: 5px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+h2 {
+  text-shadow: 0px 4px 10px rgba(179, 147, 211, 0.8);
+}
+
+/* App.css */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the text and logo */
+}
+
+.logo {
+  width: 40px; /* Adjust the size of the logo */
+  height: auto;
+  margin-right: 10px; /* Add space between the logo and text */
+  filter: invert(100%) brightness(100%) grayscale(100%); /* White effect */
+}
+
+/* Ensure the form appears below the card */
+.additional-form {
+  margin-top: 20px; /* Adds space between the card and form */
+  /* padding: 20px; */
+  background-color: #f4f4f4;
+  border: 1px solid aliceblue;
+  border-radius: 5px;
+  width: 100%; /* Match the card width */
+  box-shadow: 0px 3px 3px -2px rgb(0 0 0 / 6%), 0px 3px 4px 0px rgb(0 0 0 / 4%), 0px 1px 8px 0px rgb(0 0 0 / 4%) !important;
+    border: 1px solid lavender;
+    border-radius: 18px;
+ 
+}
+
+.additional-form input {
+  margin-bottom: 10px;
+  padding: 10px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.additional-form button {
+  padding: 8px 9px;
+  /* background-color: #007bff; */
+  color: floralwhite;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  background-image: -webkit-gradient(linear, left top, right top, from(#90caf9), color-stop(99%, #047edf));
+}
+
+.additional-form button:hover {
+  background-color: #0056b3;
+}
+
+.styled-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0 0;
+  font-size: 14px;
+  text-align: left;
+  border-top-left-radius: 20px; /* Apply top left border radius */
+  border-top-right-radius: 20px; /* Apply top right border radius */
+  border-bottom-left-radius: 20px; /* Apply bottom left border radius */
+  overflow: hidden;
+}
+
+.styled-table thead tr {
+  background-image: linear-gradient(to top, #0d0c2e 0%, #6f87af 100%);
+  color: antiquewhite;
+  text-align: left;
+  font-size: 13px;
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 13px 9px;
+}
+
+.styled-table tbody tr {
+  border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+  background-color: white;
+}
+
+.styled-table tbody tr:last-of-type {
+  border-bottom: 2px solid #009879;
+}
+
+
+.additional-form h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.additional-form h3::before,
+.additional-form h3::after {
+  content: '';
+  flex: 1;
+  border-bottom: 2px solid #009879;
+  margin: 0 10px;
+}
+
+
+.styled-table thead {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  background-image: linear-gradient(to top, #0d0c2e 0%, #6f87af 100%);
+  color: antiquewhite;
+  text-align: left;
+  font-size: 15px;
+  position: sticky;
+}
+
+.btn-outline-success {
+  color: #1de9b6;
+  background-image: none;
+  border-color: #1de9b6;
+}
+
+
+
+
+
+
+
+
