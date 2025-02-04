@@ -139,8 +139,8 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
     };
     const updatedStates = [...statesD, newState];
     setStates(updatedStates); 
-     console.log(`State ${newStateIndex}  added successfully`);
-    alert(`State ${newStateIndex}  added successfully`);
+    //  console.log(` ${newStateIndex}  added successfully`);
+    // alert(`State ${newStateIndex}  added successfully`);
     // setSnackbarMessage(`State ${newStateIndex}  added successfully`);
     // setOpenSnackbar(true);
   };
@@ -171,12 +171,12 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
     if (actionType === "add") {
       // handleAddNextRow();
       addState();
-    const newStateIndex = data.length + 1;
+    const newStateIndex = statesD.filter((item) =>item.subState === '' ).length + 1
     const newStateName = `State${newStateIndex}`;
 
     
 
-      setSnackbarMessage(`State ${newStateName} added successfully`);
+      setSnackbarMessage(` ${newStateName} added successfully`);
       setOpenSnackbar(true);
 
     } else if (actionType === "delete") {
