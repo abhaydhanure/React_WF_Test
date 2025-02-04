@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {  useState } from "react";
 import {
   Box,
   Card,
@@ -23,6 +23,7 @@ import EditNoteIcon from "@mui/icons-material/EditNote";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import Table from "./Components/Table";
 
+import { editData } from "./assets/workflowData";
 const theme = createTheme({
   palette: {
     primary: {
@@ -63,6 +64,7 @@ const TicketForm: React.FC = () => {
   };
   const [mode, setMode] = useState<'create' | 'edit' | null>(null);
   const [selectedWorkflowEdit, setSelectedWorkflowEdit] = useState<string>(''); // Holds the selected workflow value
+  const [tableData, setTableData] = useState<any[]>([]);
 
   const handleSelectChange = (event: SelectChangeEvent<string>) => {
     setSelectedWorkflowEdit(event.target.value); // event.target.value is now typed as string
@@ -73,13 +75,26 @@ const TicketForm: React.FC = () => {
   
   const handleButtonClick = (action: 'create' | 'edit', workflow: string) => {
     setMode(action);
-    console.log(`Selected workflow: ${workflow}`);
+    if(action === 'edit')
+    {
+      const editVal  = editData.filter(item => item.type === action).filter(item=> item.name == workflow);
+    
+      setTableData(editVal); // Empty array for create mode (will render empty rows)
+    }else{
+      const editVal  = editData.filter(item => item.type === action);
+      setTableData(editVal); // Empty array for create mode (will render empty rows)
+    }
+    
+    
+    console.log(`Selected workflow: ${workflow}  ${action}`);
   };
   
   const handleChange = (new_WF:string)=>{
     setSelectedWorkflowEdit(new_WF);
   }
-
+  const handleDataChange = (updatedData: any[]) => {
+    setTableData(updatedData);
+  };
   return (
     <ThemeProvider theme={theme}>
       
@@ -179,9 +194,11 @@ const TicketForm: React.FC = () => {
       </Box>
       <Table
           mode={mode ?? 'null'} // If mode is null, default to 'create'
-          states_wf={states}
+          data={tableData}
           workflow={selectedWorkflowEdit}
           onChange={handleChange}
+          onDataChange={handleDataChange}
+         
         />
 
     </ThemeProvider>
