@@ -41,6 +41,7 @@ interface State {
   stateName:string,
   StateId:number,
   subState:string,
+  owner:string,
 }
 
 const Table: React.FC<TablesProps> = ({
@@ -89,6 +90,7 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
       stateName:item.stateName,
       StateId:item.StateId,
       subState:item.subState,
+      owner:item.owner,
       // subStates: [data.filter((item) => item.subState > 0 && item.name === workflow)], // Empty array to start with, you can populate it later if needed
       // subStates: [...data].filter((item) =>item.subState != '' && item.name === workflow  )
       subStates: []
@@ -134,6 +136,7 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
       name: newStateName,
       subStates: [],
       subState :'',
+      owner:'data',
       stateName:`${newStateName}`,
       StateId: newStateIndex // Assuming this is the field to represent the state ID
     };
@@ -309,6 +312,15 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
 
     setSelectedStates(updatedSelectedStates);
   };
+   const handleInputChange = (
+     e: React.ChangeEvent<HTMLInputElement>,
+     field: string,
+     index: number
+   ) => {
+     const updatedData = [...statesD];
+     updatedData[index] = { ...updatedData[index], [field]: e.target.value };
+     onDataChange(updatedData);
+   };
   return (
     
     <div>
@@ -402,10 +414,10 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
                             </td>
                             <td>State{index + 1}</td>
                             <td>
-                              <input type="text" value={`State ${state.name} Name`} />
+                              <input type="text" value={state.name}onChange={(e) => handleInputChange(e, "name", index)}/>
                             </td>
                             <td>
-                              <input type="text" value={`State ${state.name} Display`} />
+                            <input type="text" value={state.owner}onChange={(e) => handleInputChange(e, "owner", index)}/>
                             </td>
                             <td>
                               <input type="text" value={`action${state.name}`} />
@@ -437,7 +449,7 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
                               </FormControl>
                             </td>
                             <td>
-                              <input type="text" value="" />
+                              <input type="text" value=""  />
                             </td>
                             <td>
                               <input type="text" value="" />
