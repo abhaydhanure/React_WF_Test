@@ -33,15 +33,17 @@ interface TablesProps {
   workflow: any; // Replace 'any' with a more specific type if you know the shape of 'workflow'
   onChange: (newWF: string) => void;
   onDataChange: (updatedData: any[]) => void;
+  Wlist: any[];
 }
 
 interface State {
   name: string;
   subStates: Array<{ name: string }>;
-  stateName:string,
-  StateId:number,
-  subState:string,
-  owner:string,
+  stateName: string;
+  StateId: number;
+  subState: string;
+  owner: string;
+  workflowN: string;
 }
 
 const Table: React.FC<TablesProps> = ({
@@ -50,10 +52,8 @@ const Table: React.FC<TablesProps> = ({
   workflow,
   onChange,
   onDataChange,
+  Wlist,
 }) => {
-
-  
-
   <div>
     <p>Mode: {mode}</p>
     {/* <p>States: {JSON.stringify(data)}</p> */}
@@ -64,6 +64,7 @@ const Table: React.FC<TablesProps> = ({
   const [selectedStates, setSelectedStates] = useState<Array<string | number>>(
     []
   );
+  
   // const [states, setStates] = useState<State[]>(
   //   [...Array(3).keys()].map((i) => ({
   //     name: `State${i + 1}`,
@@ -76,32 +77,28 @@ const Table: React.FC<TablesProps> = ({
   const [actionType, setActionType] = useState("");
   const [workflowName, setWorkflowName] = useState("");
   const [workflowOwner, setWorkflowOwner] = useState("ad923740.ttl");
-// 
-// 
-const isAnyStateSelected = selectedStates.length > 0;
-  
-const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
-  
+  //
+  //
+  const isAnyStateSelected = selectedStates.length > 0;
+
+  const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
+
   useEffect(() => {
     // const sortedData = [...data].sort((a, b) => a.stateId - b.stateId);
-    const sortedData = [...data].filter((item) =>item.subState == ''  );
+    const sortedData = [...data].filter((item) => item.subState == "");
     const finalData = sortedData.map((item) => ({
       name: item.name, // Assuming sortedData has a 'stateName' property
-      stateName:item.stateName,
-      StateId:item.StateId,
-      subState:item.subState,
-      owner:item.owner,
+      stateName: item.stateName,
+      StateId: item.StateId,
+      subState: item.subState,
+      owner: item.owner,
+      workflowN: item.workflowN,
       // subStates: [data.filter((item) => item.subState > 0 && item.name === workflow)], // Empty array to start with, you can populate it later if needed
       // subStates: [...data].filter((item) =>item.subState != '' && item.name === workflow  )
-      subStates: []
+      subStates: [],
     }));
     setStates(finalData); // Initialize statesD with sortedData on first render
-  }, [data]); 
-
- 
-  
-  
-  
+  }, [data]);
 
   const handleColorChange = (index: number, color: string) => {
     const newRowColors = [...rowColors];
@@ -118,30 +115,41 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
     newRowColors[index] = gradient || "";
     setRowColors(newRowColors);
   };
-  
-   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
-  
- 
+
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+
   const openConfirmationDialog = (action: string) => {
-    setActionType(action);
-    setOpenDialog(true);
+      setActionType(action);
+      setOpenDialog(true);
+   
   };
+  const actionMessages: { [key: string]: string } = {
+  add: "You are about to add a new state. Do you want to continue?",
+  delete: "You are about to delete selected states. This action cannot be undone.",
+  flush_wf: "You are about to flush all states. This action cannot be undone.",
+  delete_wf: "You are about to delete all states. This action cannot be undone.",
+};
+
+const message = actionMessages[actionType] || "Action type is not recognized.";
+
+
 
   const addState = () => {
-    
-    const newStateIndex = statesD.filter((item) =>item.subState === '' ).length + 1;
+    const newStateIndex =
+      statesD.filter((item) => item.subState === "").length + 1;
     const newStateName = `State${newStateIndex}`;
     const newState = {
       id: newStateIndex,
       name: newStateName,
       subStates: [],
-      subState :'',
-      owner:'data',
-      stateName:`${newStateName}`,
-      StateId: newStateIndex // Assuming this is the field to represent the state ID
+      subState: "",
+      owner: "data",
+      workflowN: workflow,
+      stateName: `${newStateName}`,
+      StateId: newStateIndex, // Assuming this is the field to represent the state ID
     };
     const updatedStates = [...statesD, newState];
-    setStates(updatedStates); 
+    setStates(updatedStates);
     //  console.log(` ${newStateIndex}  added successfully`);
     // alert(`State ${newStateIndex}  added successfully`);
     // setSnackbarMessage(`State ${newStateIndex}  added successfully`);
@@ -150,22 +158,20 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
 
   const addSubState = (parentIndex: number) => {
     const newSubStateIndex = statesD[parentIndex].subStates.length + 1;
-    const newSubStateName = `${statesD[parentIndex].StateId}.${newSubStateIndex}`;
+    const newSubStateName = `${statesD[parentIndex].stateName}.${newSubStateIndex}`;
 
     const updatedStates = [...statesD];
-    updatedStates[parentIndex].subStates.push({ name: newSubStateName });
+
+    const newSubState = `${updatedStates[parentIndex].name}.${newSubStateIndex}`;
+
+    updatedStates[parentIndex].subStates.push({ name: newSubState });
 
     setStates(updatedStates);
-    console.log(updatedStates);
+
     setSnackbarMessage(`Sub-state ${newSubStateName} added successfully`);
     setOpenSnackbar(true);
   };
-  
 
- 
-  
-
-  
   const handleDialogClose = () => {
     setOpenDialog(false);
   };
@@ -174,21 +180,18 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
     if (actionType === "add") {
       // handleAddNextRow();
       addState();
-    const newStateIndex = statesD.filter((item) =>item.subState === '' ).length + 1
-    const newStateName = `State${newStateIndex}`;
-
-    
+      const newStateIndex =
+        statesD.filter((item) => item.subState === "").length + 1;
+      const newStateName = `State${newStateIndex}`;
 
       setSnackbarMessage(` ${newStateName} added successfully`);
       setOpenSnackbar(true);
-
     } else if (actionType === "delete") {
       const deletedCount = selectedRows.size; // Get the count of selected states
-    // handleDeleteSelectedRows();
-    deleteSelectedStates();
-    // setSnackbarMessage(`${deletedCount} state${deletedCount > 1 ? "s" : ""} deleted successfully`);
-    // setOpenSnackbar(true);
-      
+      // handleDeleteSelectedRows();
+      deleteSelectedStates();
+      // setSnackbarMessage(`${deletedCount} state${deletedCount > 1 ? "s" : ""} deleted successfully`);
+      // setOpenSnackbar(true);
     }
     setOpenDialog(false);
   };
@@ -208,12 +211,14 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
       })
       .map((state, index) => {
         state.subStates = state.subStates.map((subState, subIndex) => {
-          return { ...subState, name: `${state.name}.${subIndex + 1}` };
+          return { ...subState, name: `State${index + 1}.${subIndex + 1}` };
         });
         return { ...state, name: `State${index + 1}` };
       });
 
-    const remainingColors = rowColors.filter((_, index) => !selectedStates.includes(index));
+    const remainingColors = rowColors.filter(
+      (_, index) => !selectedStates.includes(index)
+    );
 
     setStates(updatedStates);
     setRowColors(remainingColors);
@@ -228,8 +233,11 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
   };
 
   useEffect(() => {
+    if (mode == "create") {
+      workflow = "";
+    }
     setWorkflowName(workflow);
-  }, [workflow]);
+  }, [workflow, mode]);
 
   const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const updatedWf = event.target.value;
@@ -237,7 +245,6 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
     setWorkflowName(updatedWf);
   };
 
-  
   // const groupedData: Record<number, RowData[]> = Object.values(sortedData).reduce((acc, row) => {
   //   if (!acc[row.stateId]) {
   //     acc[row.stateId] = [];
@@ -252,20 +259,23 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
     name: string;
     owner: string;
     id: number;
-    seq:number,
+    seq: number;
   }
-  
+
   const handleAddNextRow = () => {
     const updatedData = [...data];
-    const maxSeq = updatedData.reduce((max, row) => (row.seq > max ? row.seq : max), 0);// Find the highest index of the selected rows, so we can insert after it
+    const maxSeq = updatedData.reduce(
+      (max, row) => (row.seq > max ? row.seq : max),
+      0
+    ); // Find the highest index of the selected rows, so we can insert after it
     const newRow = {
-      id: updatedData.length + 1,  // Assign the next available ID
-      name: "",                    // Blank data for name
-      stateId: "",                 // Blank data for stateId
-      owner: "",                   // Blank data for owner
-      subState:"",
-      type:mode, 
-      seq: maxSeq + 1  
+      id: updatedData.length + 1, // Assign the next available ID
+      name: "", // Blank data for name
+      stateId: "", // Blank data for stateId
+      owner: "", // Blank data for owner
+      subState: "",
+      type: mode,
+      seq: maxSeq + 1,
     };
     updatedData.push(newRow);
     const reIndexedData = updatedData.map((row, index) => ({
@@ -276,21 +286,39 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
     // Update the parent data
     onDataChange(reIndexedData);
   };
-    // Handle deleting selected rows
-    const handleDeleteSelectedRows = () => {
-      // Filter out the rows that are selected
-      console.log(selectedRows);
-      const updatedData = data.filter((_, index) => !selectedRows.has(index));
-     const reIndexedData = updatedData.map((row, index) => ({
+  // Handle deleting selected rows
+  const handleDeleteSelectedRows = () => {
+    // Filter out the rows that are selected
+    // console.log(selectedRows);
+    const updatedData = data.filter((_, index) => !selectedRows.has(index));
+    const reIndexedData = updatedData.map((row, index) => ({
       ...row,
       seq: index + 1, // Reassign ID to ensure sequential order
     }));
-  onDataChange(reIndexedData);
+    onDataChange(reIndexedData);
     setSelectedRows(new Set());
   };
 
-
   // new code for add state and delete state and add sub state
+  const [selWorkflow,setSelWorkflow] =useState<Array<string | number>>([]);
+  const [randomNumbers, setRandomNumbers] = useState<number[]>([]);
+  useEffect(() => {
+    const numbers = Wlist.map((_, index) =>
+      Math.floor(Math.random() * (index + 1) * 100)
+    );
+    setRandomNumbers(numbers);
+  }, []);
+  // Handles the checkbox change: add or remove index from selWorkflow
+  const handleCheckboxRemove = (index: string | number) => {
+    setSelWorkflow((prevSelWorkflow) => {
+      // If the index is already in selWorkflow, remove it
+      if (prevSelWorkflow.includes(index)) {
+        return prevSelWorkflow.filter((item) => item !== index);
+      }
+      // Otherwise, add the index to selWorkflow
+      return [...prevSelWorkflow, index];
+    });
+  }
 
   const handleCheckboxChange = (index: string | number, isSubState = false) => {
     const updatedSelectedStates = [...selectedStates];
@@ -298,7 +326,10 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
     if (isSubState) {
       const subStateIndex = `${index}`;
       if (updatedSelectedStates.includes(subStateIndex)) {
-        updatedSelectedStates.splice(updatedSelectedStates.indexOf(subStateIndex), 1);
+        updatedSelectedStates.splice(
+          updatedSelectedStates.indexOf(subStateIndex),
+          1
+        );
       } else {
         updatedSelectedStates.push(subStateIndex);
       }
@@ -312,19 +343,19 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
 
     setSelectedStates(updatedSelectedStates);
   };
-   const handleInputChange = (
-     e: React.ChangeEvent<HTMLInputElement>,
-     field: string,
-     index: number
-   ) => {
-     const updatedData = [...statesD];
-     updatedData[index] = { ...updatedData[index], [field]: e.target.value };
-     onDataChange(updatedData);
-   };
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: string,
+    index: number
+  ) => {
+    const updatedData = [...statesD];
+    updatedData[index] = { ...updatedData[index], [field]: e.target.value };
+    onDataChange(updatedData);
+  };
+
   return (
-    
     <div>
-      {(mode === "create" || mode === "edit") && (
+      {(mode === "create" || mode === "edit" || mode == "copy") && (
         <div>
           <Box my={3} sx={{ width: "calc(100% - 60px)", mx: "30px" }}>
             <Box my={3} sx={{ width: "calc(100% - 10px)", mx: "5px" }}>
@@ -337,7 +368,11 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
                         <TextField
                           fullWidth
                           label="Workflow name *"
-                          value={workflowName}
+                          value={
+                            mode === "copy"
+                              ? `copy ${workflowName}`
+                              : workflowName
+                          }
                           onChange={handleValueChange}
                           placeholder="Enter Workflow Name"
                         />
@@ -376,117 +411,108 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
                   {/* Table */}
                   <div style={{ overflowY: "auto", maxHeight: "400px" }}>
                     <table className="styled-table" style={{ width: "100%" }}>
-                    <thead style={{ position: "sticky", top: 0, background: "white", zIndex: 1 }}>
-                      <tr>
-                        <th>Select</th>
-                        <th>State</th>
-                        <th>Wf_Name</th>
-                        <th>Wf_Owner</th>
-                        <th>Sequence_Key</th>
-                        <th>Stage_Color</th>
-                        <th>Stage_Key</th>
-                        <th>Post_Macro</th>
-                        <th>Pre_Macro</th>
-                        <th>CC_List</th>
-                        <th>Ass_Type</th>
-                        <th>Default_Ass</th>
-                        <th>Role_Key</th>
-                        <th>Default_Owner</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {statesD.map((state, index) => (
-                        <React.Fragment key={index}>
-                          {/* Parent State Row */}
-                          <tr>
-                            <td>
-                              {index !== 0 && (
-                                <Box sx={{ display: "flex", alignItems: "center" }}>
-                                  <Checkbox
-                                    checked={selectedStates.includes(index)}
-                                    onChange={() => handleCheckboxChange(index)}
-                                  />
-                                  <IconButton onClick={() => addSubState(index)}>
-                                    <AddIcon />
-                                  </IconButton>
-                                </Box>
-                              )}
-                            </td>
-                            <td>State{index + 1}</td>
-                            <td>
-                              <input type="text" value={state.name}onChange={(e) => handleInputChange(e, "name", index)}/>
-                            </td>
-                            <td>
-                            <input type="text" value={state.owner}onChange={(e) => handleInputChange(e, "owner", index)}/>
-                            </td>
-                            <td>
-                              <input type="text" value={`action${state.name}`} />
-                            </td>
-                            <td>
-                              <FormControl fullWidth>
-                                <Select value={rowColors[index]} onChange={(e) => handleColorChange(index, e.target.value as string)} style={{ background: rowColors[index] }} sx={{ width: "100px", height: "30px" }}>
-                                  <MenuItem value="">Select Color</MenuItem>
-                                  <MenuItem value="red">Red</MenuItem>
-                                  <MenuItem value="orange">Orange</MenuItem>
-                                  <MenuItem value="yellow">Yellow</MenuItem>
-                                </Select>
-                              </FormControl>
-                            </td>
-                            <td>
-                              <FormControl fullWidth>
-                                <Select sx={{ width: "100px", height: "30px" }}>
-                                  <MenuItem value="no">No</MenuItem>
-                                  <MenuItem value="yes">Yes</MenuItem>
-                                </Select>
-                              </FormControl>
-                            </td>
-                            <td>
-                              <FormControl fullWidth>
-                                <Select sx={{ width: "100px", height: "30px" }}>
-                                  <MenuItem value="no">No</MenuItem>
-                                  <MenuItem value="yes">Yes</MenuItem>
-                                </Select>
-                              </FormControl>
-                            </td>
-                            <td>
-                              <input type="text" value=""  />
-                            </td>
-                            <td>
-                              <input type="text" value="" />
-                            </td>
-                            <td>
-                              <input type="text" value="" />
-                            </td>
-                            <td>
-                              <input type="text" value="" />
-                            </td>
-                            <td>
-                              <input type="text" value="" />
-                            </td>
-                            <td>
-                              <input type="text" value="" />
-                            </td>
-                          </tr>
-
-                         
-                          {state.subStates.map((subState, subIndex)=> (
-                            <tr key={`${index}-${subIndex}`}>
+                      <thead
+                        style={{
+                          position: "sticky",
+                          top: 0,
+                          background: "white",
+                          zIndex: 1,
+                        }}
+                      >
+                        <tr>
+                          <th>Select</th>
+                          <th>State</th>
+                          <th>Wf_Name</th>
+                          <th>Wf_Owner</th>
+                          <th>Sequence_Key</th>
+                          <th>Stage_Color</th>
+                          <th>Stage_Key</th>
+                          <th>Post_Macro</th>
+                          <th>Pre_Macro</th>
+                          <th>CC_List</th>
+                          <th>Ass_Type</th>
+                          <th>Default_Ass</th>
+                          <th>Role_Key</th>
+                          <th>Default_Owner</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {statesD.map((state, index) => (
+                          <React.Fragment key={index}>
+                            {/* Parent State Row */}
+                            <tr>
                               <td>
-                                <Checkbox checked={selectedStates.includes(`${index}-${subIndex}`)} onChange={() => handleCheckboxChange(`${index}-${subIndex}`, true)} />
+                                {index !== 0 && (
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <Checkbox
+                                      checked={selectedStates.includes(index)}
+                                      onChange={() =>
+                                        handleCheckboxChange(index)
+                                      }
+                                    />
+                                    <IconButton
+                                      onClick={() => addSubState(index)}
+                                    >
+                                      <AddIcon />
+                                    </IconButton>
+                                  </Box>
+                                )}
                               </td>
-                              <td>State{subState.name}</td>
+                              <td>State{index + 1}</td>
                               <td>
-                                <input type="text" value={`Sub-State ${subState.name} Name`} />
+                                <input
+                                  type="text"
+                                  value={state.name}
+                                  onChange={(e) =>
+                                    handleInputChange(e, "name", index)
+                                  }
+                                />
                               </td>
                               <td>
-                                <input type="text" value={`Sub-State ${subState.name} Display`} />
+                                <input
+                                  type="text"
+                                  value={state.owner}
+                                  onChange={(e) =>
+                                    handleInputChange(e, "owner", index)
+                                  }
+                                />
                               </td>
                               <td>
-                                <input type="text" value={`action${subState.name}`} />
+                                <input
+                                  type="text"
+                                  value={`action${state.name}`}
+                                />
                               </td>
                               <td>
                                 <FormControl fullWidth>
-                                  <Select sx={{ width: "100px", height: "30px" }}>
+                                  <Select
+                                    value={rowColors[index]}
+                                    onChange={(e) =>
+                                      handleColorChange(
+                                        index,
+                                        e.target.value as string
+                                      )
+                                    }
+                                    style={{ background: rowColors[index] }}
+                                    sx={{ width: "100px", height: "30px" }}
+                                  >
+                                    <MenuItem value="">Select Color</MenuItem>
+                                    <MenuItem value="red">Red</MenuItem>
+                                    <MenuItem value="orange">Orange</MenuItem>
+                                    <MenuItem value="yellow">Yellow</MenuItem>
+                                  </Select>
+                                </FormControl>
+                              </td>
+                              <td>
+                                <FormControl fullWidth>
+                                  <Select
+                                    sx={{ width: "100px", height: "30px" }}
+                                  >
                                     <MenuItem value="no">No</MenuItem>
                                     <MenuItem value="yes">Yes</MenuItem>
                                   </Select>
@@ -494,7 +520,9 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
                               </td>
                               <td>
                                 <FormControl fullWidth>
-                                  <Select sx={{ width: "100px", height: "30px" }}>
+                                  <Select
+                                    sx={{ width: "100px", height: "30px" }}
+                                  >
                                     <MenuItem value="no">No</MenuItem>
                                     <MenuItem value="yes">Yes</MenuItem>
                                   </Select>
@@ -516,16 +544,93 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
                                 <input type="text" value="" />
                               </td>
                               <td>
-                                <input type="text" value=""/>
-                              </td>
-                              <td>
-                                <input type="text" value={`Reassignment for ${subState.name}`} />
+                                <input type="text" value="" />
                               </td>
                             </tr>
-                          ))}
-                        </React.Fragment>
-                      ))}
-                    </tbody>
+
+                            {state.subStates.map((subState, subIndex) => (
+                              <tr key={`${index}-${subIndex}`}>
+                                <td>
+                                  <Checkbox
+                                    checked={selectedStates.includes(
+                                      `${index}-${subIndex}`
+                                    )}
+                                    onChange={() =>
+                                      handleCheckboxChange(
+                                        `${index}-${subIndex}`,
+                                        true
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td>State{subState.name}</td>
+                                <td>
+                                  <input
+                                    type="text"
+                                    value={`Sub-State ${subState.name} Name`}
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    type="text"
+                                    value={`Sub-State ${subState.name} Display`}
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    type="text"
+                                    value={`action${subState.name}`}
+                                  />
+                                </td>
+                                <td>
+                                  <FormControl fullWidth>
+                                    <Select
+                                      sx={{ width: "100px", height: "30px" }}
+                                    >
+                                      <MenuItem value="no">No</MenuItem>
+                                      <MenuItem value="yes">Yes</MenuItem>
+                                    </Select>
+                                  </FormControl>
+                                </td>
+                                <td>
+                                  <FormControl fullWidth>
+                                    <Select
+                                      sx={{ width: "100px", height: "30px" }}
+                                    >
+                                      <MenuItem value="no">No</MenuItem>
+                                      <MenuItem value="yes">Yes</MenuItem>
+                                    </Select>
+                                  </FormControl>
+                                </td>
+                                <td>
+                                  <input type="text" value="" />
+                                </td>
+                                <td>
+                                  <input type="text" value="" />
+                                </td>
+                                <td>
+                                  <input type="text" value="" />
+                                </td>
+                                <td>
+                                  <input type="text" value="" />
+                                </td>
+                                <td>
+                                  <input type="text" value="" />
+                                </td>
+                                <td>
+                                  <input type="text" value="" />
+                                </td>
+                                <td>
+                                  <input
+                                    type="text"
+                                    value={`Reassignment for ${subState.name}`}
+                                  />
+                                </td>
+                              </tr>
+                            ))}
+                          </React.Fragment>
+                        ))}
+                      </tbody>
                     </table>
                   </div>
                   {/* Submit Button */}
@@ -562,13 +667,109 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
               <Alert severity="success">{snackbarMessage}</Alert>
             </Snackbar>
 
-            <Dialog open={openDialog} onClose={handleDialogClose}>
+         
+
+
+            
+          </Box>
+        </div>
+      )}
+      {mode === "delete" && (
+        <Box my={3} sx={{ width: "calc(100% - 60px)", mx: "30px" }}>
+          <Box my={3} sx={{ width: "calc(100% - 10px)", mx: "5px" }}>
+            <Card sx={{ pt: "7px", mb: 3, border: "3px solid lavender" }}>
+              <CardContent>
+                <div style={{ overflowY: "auto", maxHeight: "400px" }}>
+                  <table className="styled-table" style={{ width: "100%" }}>
+                    <thead
+                      style={{
+                        position: "sticky",
+                        top: 0,
+                        background: "white",
+                        zIndex: 1,
+                      }}
+                    >
+                      <tr>
+                        <th>Workflow Name</th>
+                        <th>Work flow Id </th>
+                        <th>No of Request </th>
+                        <th>Select</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Wlist.map((workflowName, index) => {
+                        
+
+                        return (
+                          <tr key={index}>
+                            <td>{workflowName}</td>
+                            <td>{index + 1}</td>{" "}
+                            {/* Displaying 1-based index */}
+                            <td>{randomNumbers[index]}</td> {/* Using memoized random number */}
+                            {/* Displaying the generated random number */}
+                            <td>
+                            <Checkbox
+                                       checked={selWorkflow.includes(index)} // Check if the index is in the selected state
+                                       onChange={() => handleCheckboxRemove(index)}
+                                    />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+
+                  <Box
+  sx={{
+    display: "flex",
+    justifyContent: "center", // Center the buttons
+    alignItems: "center", // Align buttons vertically
+    gap: 2, // Adds space between the buttons
+    width: "100%",
+  }}
+>
+  <Button
+    
+    variant="contained"
+    sx={{
+      backgroundImage: "linear-gradient(310deg,rgb(173, 45, 23),rgb(230, 144, 171))",
+      color: "antiquewhite",
+      "&:hover": { backgroundColor: "white" },
+    }}
+    onClick={() => openConfirmationDialog("flush_wf")}
+  > FLUSH WORKFLOW
+    </Button>
+ 
+  <Button
+    
+    variant="contained"
+    sx={{
+      backgroundImage: "linear-gradient(310deg,rgb(173, 23, 23),rgb(230, 144, 171))",
+      color: "antiquewhite",
+      "&:hover": { backgroundColor: "white" },
+    }}
+    onClick={() => openConfirmationDialog("delete_wf")}
+  > DELETE WORKFLOW
+    </Button>
+                   
+                  </Box>
+                </div>
+              </CardContent>
+            </Card>
+          </Box>
+
+        
+        </Box>
+      )}
+
+<Dialog open={openDialog} onClose={handleDialogClose}>
               <DialogTitle>Are you sure?</DialogTitle>
               <DialogContent>
                 <Typography variant="body1">
-                  {actionType === "add"
+                  {/* {actionType === "add"
                     ? "You are about to add a new state. Do you want to continue?"
-                    : "You are about to delete selected states. This action cannot be undone."}
+                    : "You are about to delete selected states. This action cannot be undone."} */}
+                    {message}
                 </Typography>
               </DialogContent>
               <DialogActions>
@@ -578,9 +779,6 @@ const [statesD, setStates] = useState<State[]>([]); // Initialize as empty
                 </Button>
               </DialogActions>
             </Dialog>
-          </Box>
-        </div>
-      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, {  useState } from "react";
+import React, {  act, useState } from "react";
 import {
   Box,
   Card,
@@ -51,9 +51,11 @@ const TicketForm: React.FC = () => {
   const [showTable] = useState(false); // New state to control table visibility
   const [openEditModal, setOpenEditModal] = useState(false); // Modal for editing workflow
   const [selectedWorkflow] = useState("");
-  const handleOpenEditModal = () => {
-    setOpenEditModal(true);
-  };
+
+  
+  // const handleOpenEditModal = () => {
+    
+  // };
 
   const handleCloseEditModal = () => {
     setOpenEditModal(false);
@@ -62,25 +64,42 @@ const TicketForm: React.FC = () => {
   const renderTable = () => {
     return null; // If no workflow is selected, return null to hide the table
   };
-  const [mode, setMode] = useState<'create' | 'edit' | null>(null);
+  const [mode, setMode] = useState<'create' | 'edit' | 'copy' |'delete'| null>(null);
   const [selectedWorkflowEdit, setSelectedWorkflowEdit] = useState<string>(''); // Holds the selected workflow value
   const [tableData, setTableData] = useState<any[]>([]);
 
   const handleSelectChange = (event: SelectChangeEvent<string>) => {
     setSelectedWorkflowEdit(event.target.value); // event.target.value is now typed as string
     // console.log(event.target.value);
-    handleButtonClick('edit', event.target.value);
-   
+    handleButtonClick(mode as "copy" | "edit" | "create", event.target.value);
+
   };
-  
-  const handleButtonClick = (action: 'create' | 'edit', workflow: string) => {
+  const handleOpenEditModal = (action: 'copy' | 'edit' ) => {
+    setMode(action);
+    setOpenEditModal(true);
+  }
+  const uniqueWorkflowNames = [...new Set(editData.map(item =>item.workflowN).filter(workflowN=>workflowN != ''))];
+  const handleDeleteButtonClick = (action: 'delete') => {
+  setMode(action);
+  console.log('delete',uniqueWorkflowNames);
+ 
+  }
+  const handleButtonClick = (action: 'create' | 'edit' | 'copy', workflow: string) => {
     setMode(action);
     if(action === 'edit')
     {
       const editVal  = editData.filter(item => item.type === action).filter(item=> item.name == workflow);
     
       setTableData(editVal); // Empty array for create mode (will render empty rows)
-    }else{
+    }else if(action == 'copy')
+    {
+     
+      const editVal  = editData.filter(item => item.type === 'edit').filter(item=> item.name == workflow);
+      
+    
+      setTableData(editVal); // Empty array for create mode (will render empty rows)
+    }
+    else{
       const editVal  = editData.filter(item => item.type === action);
       setTableData(editVal); // Empty array for create mode (will render empty rows)
     }
@@ -95,6 +114,9 @@ const TicketForm: React.FC = () => {
   const handleDataChange = (updatedData: any[]) => {
     setTableData(updatedData);
   };
+
+
+  
   return (
     <ThemeProvider theme={theme}>
       
@@ -127,7 +149,8 @@ const TicketForm: React.FC = () => {
             <Button
               fullWidth
               variant="contained"
-              onClick={handleOpenEditModal}
+              onClick={() => handleOpenEditModal('edit')}
+              // onClick={handleOpenEditModal}
               sx={{ backgroundImage: "linear-gradient(310deg, #1c17ad, #9093e6)", color: "antiquewhite", "&:hover": { backgroundColor: "white" } }}
               startIcon={<EditNoteIcon />}
             >
@@ -138,6 +161,8 @@ const TicketForm: React.FC = () => {
             <Button
               fullWidth
               variant="contained"
+              onClick={() => handleOpenEditModal('copy')}
+              // onClick={handleOpenEditModal}
               sx={{ backgroundColor: "lightsteelblue", color: "darkblue", "&:hover": { backgroundColor: "lightsteelblue" } }} // Red color on normal and hover
               startIcon={<FileCopyIcon />}
             >
@@ -146,6 +171,7 @@ const TicketForm: React.FC = () => {
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button
+             onClick={() => handleDeleteButtonClick('delete')}
               fullWidth
               variant="contained"
               sx={{ backgroundImage: "linear-gradient(315deg, #ca7968 0%, #833d3d 74%);", color: "antiquewhite", "&:hover": { backgroundColor: "white" } }}
@@ -170,11 +196,18 @@ const TicketForm: React.FC = () => {
         )}
 
         <Dialog open={openEditModal} onClose={handleCloseEditModal} fullWidth maxWidth="md">
-          <DialogTitle>Edit Workflow</DialogTitle>
+          <DialogTitle>{mode ? mode.toUpperCase() : ''} WORKFLOW </DialogTitle>
           <DialogContent>
             <FormControl fullWidth>
               <InputLabel id="workflow-select-label">Select Workflow</InputLabel>
               <Select labelId="workflow-select-label" id="workflow-select" value={selectedWorkflowEdit}   onChange={handleSelectChange} >
+                
+                
+                {/* {uniqueWorkflowNames.map((workflowName, index) => (
+                  <MenuItem key={index} value={workflowName}>
+                    {workflowName}
+                  </MenuItem>
+                ))} */}
                 <MenuItem value={"workflow1"}>Workflow 1</MenuItem>
                 <MenuItem value={"workflow2"}>Workflow 2</MenuItem>
                 <MenuItem value={"workflow3"}>Workflow 3</MenuItem>
@@ -198,7 +231,7 @@ const TicketForm: React.FC = () => {
           workflow={selectedWorkflowEdit}
           onChange={handleChange}
           onDataChange={handleDataChange}
-         
+          Wlist={uniqueWorkflowNames}
         />
 
     </ThemeProvider>
